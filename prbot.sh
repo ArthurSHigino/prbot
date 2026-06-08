@@ -139,16 +139,16 @@ HEADER="*PRbot - Relatório de PRs Pendentes*  ($(date '+%d/%m/%Y %H:%M'))"
 FOOTER="_Total: ${TOTAL_PRS} PRs | Críticos: ${NUM_CRITICOS:-0}_"
 
 # Envia para o webhook do Slack via HTTP POST
-curl -s -o /dev/null -w "" \
+RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
     -X POST -H "Content-Type: application/json" \
     -d "{\"text\": \"${HEADER}\n────────────────────────\n${RELATORIO}\n────────────────────────\n${FOOTER}\"}" \
-    "$WEBHOOK_URL"
+    "$WEBHOOK_URL")
 
 # Verifica resultado do envio
-if [ $? -eq 0 ]; then
-    echo "[OK] Relatório enviado para Slack" >> "$LOG_FILE"
+if [ "$RESPONSE" = "200" ]; then
+    echo "[OK] Relatório enviado para Slack (HTTP ${RESPONSE})" >> "$LOG_FILE"
 else
-    echo "[ERRO] Falha ao enviar para Slack" >> "$LOG_FILE"
+    echo "[ERRO] Falha ao enviar para Slack (HTTP ${RESPONSE})" >> "$LOG_FILE"
 fi
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] PRbot finalizado" >> "$LOG_FILE"
